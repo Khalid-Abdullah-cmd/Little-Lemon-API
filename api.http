@@ -1,0 +1,12 @@
+GET http://127.0.0.1:8000/auth/users/ HTTP/1.1
+Authorization: Token c13efd97ab15b8d4a5ab9ef7fa67f45a782a83e6
+
+###
+
+POST http://127.0.0.1:8000/auth/token/login
+Content-Type: application/json
+
+{
+    "username": "khalid",
+    "password": "khalid"
+}
