@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class Category(models.Model):
     
     slug = models.SlugField(unique=True)
-    title = models.CharField(max_length=250)
+    title = models.CharField(max_length=250, db_index=True)
     
     def __str__(self):
         return self.title
@@ -13,9 +13,9 @@ class Category(models.Model):
     
 class MenuItem(models.Model):
     
-    title = models.CharField(max_length=250)    
-    price = models.DecimalField(max_digits=6, decimal_places=2)
-    featured = models.BooleanField(default=False)
+    title = models.CharField(max_length=250, db_index=True)    
+    price = models.DecimalField(max_digits=6, decimal_places=2, db_index=True)
+    featured = models.BooleanField(default=False, db_index=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     
     def __str__(self):
@@ -46,12 +46,12 @@ class Order(models.Model):
     delivery_crew = models.ForeignKey(User,
     on_delete=models.SET_NULL,
     null=True,
-    related_name='deliveries',
+    related_name='delivery_crew',
     blank=True)
     
-    status = models.BooleanField(default=False)
+    status = models.BooleanField(default=False, db_index=True)
     total = models.DecimalField(max_digits=6, decimal_places=2)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True, db_index=True)
     
     def __str__(self):
         return str(self.id)
@@ -68,6 +68,8 @@ class OrderItem(models.Model):
     def __str__(self):
         return str(self.id)
     
+    class Meta:
+        unique_together= ('order', 'menuitem')
     
             
     
