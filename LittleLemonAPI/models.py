@@ -26,9 +26,9 @@ class MenuItem(models.Model):
 class Cart(models.Model):
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    menu_items = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    menuitems = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
     quantity = models.IntegerField()
-    unitprice = models.DecimalField(max_digits=6, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
     price = models.DecimalField(max_digits=6, decimal_places=2)
     
     def __str__(self):
@@ -36,7 +36,7 @@ class Cart(models.Model):
     
     #  Prevents duplicate rows for the same user/item combo
     class Meta:
-        unique_together = ('user', 'menu_items')
+        unique_together = ('user', 'menuitems')
     
     
 class Order(models.Model):
