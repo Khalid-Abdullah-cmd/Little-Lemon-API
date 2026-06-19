@@ -10,7 +10,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from datetime import date
 from rest_framework.pagination import PageNumberPagination
-
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from rest_framework.decorators import throttle_classes
 
 
 
@@ -30,7 +31,8 @@ class MenuItemListCreate(generics.ListCreateAPIView):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
     permission_classes = [IsManagerOrReadOnly]
-    pagination_class = MenuItemPagination 
+    pagination_class = MenuItemPagination
+    throttle_classes = [AnonRateThrottle, UserRateThrottle] 
 
     def get_queryset(self):
         queryset = MenuItem.objects.all()
@@ -59,6 +61,7 @@ class MenuItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
     permission_classes = [IsManagerOrReadOnly]
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
     
     
     
@@ -68,6 +71,7 @@ class MenuItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 #Managers
 @api_view(['GET', 'POST']) 
 @permission_classes([IsManager])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def Manager_details(request):
     
     if request.method == 'GET':
@@ -94,6 +98,7 @@ def Manager_details(request):
         
 @api_view(['DELETE'])
 @permission_classes([IsManager])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def Manager_deletion(request, id):
     
     try:
@@ -112,6 +117,7 @@ def Manager_deletion(request, id):
 #Delivery crew
 @api_view(['GET', 'POST']) 
 @permission_classes([IsManager])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def Delivery_Crew_details(request):
     
     if request.method == 'GET':
@@ -137,7 +143,8 @@ def Delivery_Crew_details(request):
         
 
 @api_view(['DELETE']) 
-@permission_classes([IsManager])   
+@permission_classes([IsManager])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])   
 def Remove_From_Crew(request, id):
     
     
@@ -156,6 +163,7 @@ def Remove_From_Crew(request, id):
 #Cart
 
 @api_view(['GET', 'POST', 'DELETE'])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 @permission_classes([IsAuthenticated])
 def Cart_List(request):
     
@@ -216,7 +224,8 @@ def Cart_List(request):
    
 # Orders     
 @api_view(['GET', 'POST']) 
-@permission_classes([IsAuthenticated]) 
+@permission_classes([IsAuthenticated])
+@throttle_classes([AnonRateThrottle, UserRateThrottle]) 
 def Order_List(request):
     
     if request.method == 'GET':
@@ -284,6 +293,7 @@ def Order_List(request):
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def Order_Detail(request, pk):
     
     
