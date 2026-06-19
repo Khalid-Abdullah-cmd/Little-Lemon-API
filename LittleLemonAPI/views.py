@@ -109,8 +109,7 @@ def Manager_deletion(request, id):
     group = Group.objects.get(name='Manager')
     
     group.user_set.remove(user)
-    return Response(status=status.HTTP_200_OK)
-    
+    return Response(status=status.HTTP_204_NO_CONTENT)    
     
     
     
@@ -156,7 +155,7 @@ def Remove_From_Crew(request, id):
     group = Group.objects.get(name='Delivery crew')
     
     group.user_set.remove(user)
-    return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -185,11 +184,18 @@ def Cart_List(request):
         
         menuitem = get_object_or_404(MenuItem, id=menuitem_id)
         
+        
         try:
             quantity = int(quantity)
+            
+            if quantity <= 0:
+                return Response({"message": "Quantity must be greater than 0."}, status=status.HTTP_400_BAD_REQUEST)
+        
         except ValueError:
             return Response({"message": "Quantity must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
-
+        
+        
+        
         unit_price = menuitem.price
         total_price = unit_price * quantity
 
@@ -229,27 +235,47 @@ def Cart_List(request):
 def Order_List(request):
     
     if request.method == 'GET':
+        
         user = request.user
         
+        #added pagination 
         if user.groups.filter(name='Manager').exists():
             orders_data = Order.objects.all()
-            return Response(OrderSerializer(orders_data, many=True).data, status=status.HTTP_200_OK)
-            
             
         elif user.groups.filter(name='Delivery crew').exists():
-                
-                orders_data = Order.objects.filter(delivery_crew=user) 
-                serializer = OrderSerializer(orders_data, many=True) 
-                return Response(serializer.data, status=status.HTTP_200_OK)
-                
-            
+            orders_data = Order.objects.filter(delivery_crew=user) 
             
         else:
             
-            
             orders_data = Order.objects.filter(user=user) 
-            serializer = OrderSerializer(orders_data, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        
+        status_param = request.query_params.get('status')
+        
+        if status_param is not None:
+            
+            is_delivered = True if status_param == '1' else False
+            orders_data = orders_data.filter(status=is_delivered)
+
+        
+        ordering = request.query_params.get('ordering')
+        
+        
+        if ordering:
+            
+            ordering_fields = ordering.split(',')
+            orders_data = orders_data.order_by(*ordering_fields)
+
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 2 
+        
+        result_page = paginator.paginate_queryset(orders_data, request)
+        
+        serializer = OrderSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+            
+    
         
         
     elif request.method == 'POST':
@@ -361,13 +387,9 @@ def Order_Detail(request, pk):
     elif request.method == 'DELETE':
         if is_manager:
             
-            
-            
             order.delete()
-            
-            return Response({"message": "Order deleted successfully."}, status=status.HTTP_200_OK)
+            return Response({"message": "Order deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         
-
 
         return Response({"message": "Only managers can delete orders."}, status=status.HTTP_403_FORBIDDEN)            
             
