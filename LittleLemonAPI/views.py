@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 
 
 
@@ -36,6 +37,7 @@ class MenuItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 #Groups endpoints 
 
+#Managers
 @api_view(['GET', 'POST']) 
 @permission_classes([IsManager])
 def Manager_details(request):
@@ -62,9 +64,89 @@ def Manager_details(request):
             
         
         
+@api_view(['DELETE'])
+@permission_classes([IsManager])
+def Manager_deletion(request, id):
+    
+    try:
+        user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    group = Group.objects.get(name='Manager')
+    
+    group.user_set.remove(user)
+    return Response(status=status.HTTP_200_OK)
+    
+    
+    
+    
+#Delivery crew
+@api_view(['GET', 'POST']) 
+@permission_classes([IsManager])
+def Delivery_Crew_details(request):
+    
+    if request.method == 'GET':
+        crew = User.objects.get(groups__name='Delivery crew')
+        serializer = UserSerializer(crew, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    elif request.method == 'POST':
+        username = request.data.get("username")
         
         
+        if not username:
+            return Response({"message": "Username field is required"}, status=status.HTTP_400_BAD_REQUEST)
         
+        user = get_object_or_404(User, username=username)
+        group = Group.objects.filter(name='Delivery crew')
+        
+        user.groups.add(group)
+           
+        return Response({"message": f"User '{username}' promoted to Delivery Crew successfully"}, status=status.HTTP_201_CREATED)
+    
+            
+        
+
+@api_view(['GET', 'POST']) 
+@permission_classes([IsManager])   
+def Remove_From_Crew(request, id):
+    
+    
+    try:
+        user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    group = Group.objects.get(name='Delivery crew')
+    
+    group.user_set.remove(user)
+    return Response(status=status.HTTP_200_OK)
 
 
 
+#Cart
+
+@api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def Cart_List(request):
+    
+    if request.method == 'GET':
+        items = Cart.objects.filter(user=request.user)
+        serializer = CartSerializer(items, many=True)
+        
+        return Response (serializer.data, status=status.HTTP_200_OK)
+    
+        
+        
+    elif request.method == 'POST':
+
+        print(f"The authenticated user is: {request.user.username}")
+        pass 
+       
+       
+        
+    elif request.method == 'DELETE':
+        
+        Cart.objects.filter(user=request.user).delete()
+        return Response({"message": "Cart Emptied"})
