@@ -7,7 +7,8 @@ Manager_deletion,
 Delivery_Crew_details,
 Remove_From_Crew,
 Cart_List,
-Order_List)
+Order_List,
+Order_Detail)
 
 
 urlpatterns = [
@@ -29,7 +30,7 @@ urlpatterns = [
     
     #Order
     path('orders', Order_List),
-    path('orders/<int:pk>'),
+    path('orders/<int:pk>',Order_Detail),
     
     
 
