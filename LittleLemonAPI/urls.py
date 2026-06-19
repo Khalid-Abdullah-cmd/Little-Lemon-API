@@ -1,5 +1,15 @@
 from django.urls import path
-from .views import MenuItemListCreate, MenuItemDetailView,Manager_details,Manager_deletion, Delivery_Crew_details, Remove_From_Crew, Cart_List
+from .views import (
+MenuItemListCreate,
+MenuItemDetailView,
+Manager_details,
+Manager_deletion,
+Delivery_Crew_details,
+Remove_From_Crew,
+Cart_List,
+Order_List)
+
+
 urlpatterns = [
     
     #menu-items
@@ -18,7 +28,7 @@ urlpatterns = [
     path('cart/menu-items', Cart_List),
     
     #Order
-    path('orders'),
+    path('orders', Order_List),
     path('orders/<int:pk>'),
     
     

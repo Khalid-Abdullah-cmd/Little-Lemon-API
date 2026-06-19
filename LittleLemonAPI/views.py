@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from .models import Category, MenuItem, Cart, Order, OrderItem
 from .serializer import CategorySerializer, MenuItemSerializer, CartSerializer, OrderSerializer, OrderItemSerializer , UserSerializer
-from .permissions import IsManagerOrReadOnly, IsManager
+from .permissions import IsManagerOrReadOnly, IsManager, IsDeliveryCrew
 from django.contrib.auth.models import Group, User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -35,7 +35,7 @@ class MenuItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     
 
-#Groups endpoints 
+#   Groups endpoints 
 
 #Managers
 @api_view(['GET', 'POST']) 
@@ -150,3 +150,43 @@ def Cart_List(request):
         
         Cart.objects.filter(user=request.user).delete()
         return Response({"message": "Cart Emptied"})
+    
+    
+   
+   
+   
+# Orders     
+@api_view(['GET', 'POST']) 
+@permission_classes([IsAuthenticated]) 
+def Order_List(request):
+    
+    if request.method == 'GET':
+        user = request.user
+        
+        if user.groups.filter(name='Manager').exists():
+            orders_data = Order.objects.all()
+            return Response(OrderSerializer(orders_data, many=True).data, status=status.HTTP_200_OK)
+            
+            
+        elif user.groups.filter(name='Delivery crew').exists():
+                
+                orders_data = Order.objects.filter(delivery_crew=user) 
+                serializer = OrderSerializer(orders_data, many=True) 
+                return Response(serializer.data, status=status.HTTP_200_OK)
+                
+            
+            
+        else:
+            
+            
+            orders_data = Order.objects.filter(user=user) 
+            serializer = OrderSerializer(orders_data, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            
+                
+            
+        
+        
+        
+    

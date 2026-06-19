@@ -29,4 +29,14 @@ class IsManager(permissions.BasePermission):
             return False
             
         
-        return request.user.groups.filter(name='Manager').exists()    
+        return request.user.groups.filter(name='Manager').exists()
+    
+    
+class IsDeliveryCrew(permissions.BasePermission):
+    def has_permission(self, request, view):
+        
+        if not (request.user and request.user.is_authenticated):
+            return False
+            
+        
+        return request.user.groups.filter(name='Delivery crew').exists()            
